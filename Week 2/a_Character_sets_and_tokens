@@ -1,0 +1,30 @@
+Character sets and tokens
+
+
+The structure of a C Program
+
+A C program consists of characters, much like an essay in English. 
+However, unlike an essay, where spelling and punctuation errors might be overlooked, in a C program, even small mistakes—like misspellings or incorrect punctuation—will cause the compiler to stop the program from running. 
+A good C compiler will provide error messages to help you understand what went wrong.
+
+
+Tokens in a C Program
+
+A C program is assembled from tokens, which are the smallest meaningful units in the code. Some of the tokens you’ll encounter in C include:
+
+•	Comments: Comments begin with /* and end with */. Anything between these markers is ignored by the compiler. If you forget to close a comment, you’ll get an error message indicating that the comment wasn’t properly completed.
+
+•	Preprocessor Directives: These begin with a sharp symbol (#). For example, #include is a preprocessor directive that tells the compiler to include a specific library. Libraries like stdio.h (standard input/output), math.h (mathematical functions), and time.h (time-related functions) are commonly used in C programs.
+
+•	Identifiers: Identifiers are names for variables, functions, or other entities. They can be single letters like a or b, or longer names like main (the special function where program execution starts). It’s important to choose meaningful identifiers for better readability and maintainability.
+
+•	Operators: Operators are symbols that perform operations on data. For example, the + symbol is a binary operator (for addition), and & is used as an operator to get the address of a variable. Operators like && are used for logical operations.
+
+•	Punctuation: marks like curly braces {}, parentheses (), and semicolons ; are essential for structuring C programs. Correct punctuation is vital, as any mismatch will result in syntax errors.
+
+
+Syntax and Semantics in C
+
+A C program must be syntactically correct, meaning it must follow the rules of the language. The compiler will check the syntax of the program. 
+For example: if we mistype an open curly brace { as an open parenthesis (, the compiler will issue an error message, hopefully pointing to where the error occurred.
+Once the program passes syntax checks, the next step is ensuring it is semantically correct, meaning the program behaves as expected. This requires running, modifying, and testing the program repeatedly until it works correctly.
