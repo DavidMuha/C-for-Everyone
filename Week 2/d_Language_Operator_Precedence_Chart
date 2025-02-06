@@ -1,0 +1,116 @@
+OPERATORS
+
+
+Operator precedence describes the order in which C reads expressions. 
+
+For example, the expression a=4+b*2 contains two operations, an addition and a multiplication. 
+
+Does the C compiler evaluate 4+b first, then multiply the result by 2, or does it evaluate b*2 first, then add 4 to the result?
+ The operator precedence chart contains the answers. Operators higher in the chart have a higher precedence, meaning that the C compiler evaluates them first. Operators on the same line in the chart have the same precedence, and the "Associativity" column on the right gives their evaluation order.
+
+
+OPERATOR TYPE                   |                  OPERATOR                        |       Associativity
+------------------------------------------------------------------------------------------------------------
+Primary Expression              |   () [] . -> expr++ expr--                       |      left-to-right
+------------------------------------------------------------------------------------------------------------
+Unary                           |    * & + - ! ~ ++expr --expr (typecast) sizeof   |    right-to-left
+------------------------------------------------------------------------------------------------------------
+Binary                          |    * / %                                         |    left-to-right
+.                               |    + -                                           |
+.                               |    >> <<                                         |
+.                               |    < > <= >=                                     |
+.                               |    == !=                                         |
+.                               |    &                                             |
+.                               |    ^                                             |
+.                               |    |                                             |
+.                               |    &&                                            |
+.                               |    ||                                            | 
+------------------------------------------------------------------------------------------------------------
+Ternary                         |    ?:                                            |     right-to-left
+------------------------------------------------------------------------------------------------------------
+Assignment                      |    = += -= *= /= %= >>= <<= &= ^= |=             |     right-to-left
+------------------------------------------------------------------------------------------------------------
+Comma                           |    ,                                             |     left-to-right
+------------------------------------------------------------------------------------------------------------
+
+
+
+
+NOTES:   Operators
+
+---------------------------------------------------------------------------------------------------
+Unary Operators   |	  * & + - ! ~ ++expr --expr (typecast) sizeof	    |      right-to-left
+---------------------------------------------------------------------------------------------------
+*	                |   dereferencing (later in the course)
+&	                |   Adresse of
+- or +            |	  unary + and - operators have a higher value (e.g. +b +a) 
+!	                |   logical negation (important in logical and relational expressions)
+++expr –expr	    |   the prefix autoincrements and auto decrements (we need typecast)
+sizeof	          |   gets the size of the expression (how many bytes)
+---------------------------------------------------------------------------------------------------
+
+
+
+---------------------------------------------------------------------------------------------------
+Binary Operators  |   * / %         |
+.                 |   + -           |
+.                 |   >> <<         |   Bit shift operators
+.                 |   < > <= >=     |   Relation operators less than, greater than, greater than equal or less than equal.
+.                 |   == !=         |   Equality and inequality: (a equal to b)  or  (a not equal to b)
+.                 |   &             |   Bit wise (the unary & is an address of)
+.                 |   ^             |   Bit wise operation
+.                 |   |             |   bit shift
+.                 |   &&            |   logical and 
+.                 |   ||            |   logical or
+----------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------------------
+Ternary Operator  |   ?:            |   right-to-left       |   Three arguments (a bit esoteric – we will see it shortly
+----------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------
+Assignment Operators	|      = += -= *= /= %= >>= <<= &= ^= |=	|     right-to-left
+-----------------------------------------------------------------------------------------------------
+= 	                    |      assign
++= 	                    |      Plus assignment 
+-= 	                    |      Minus assignment
+*= 	                    |      Times assignment
+/= 	                    |      „Etc“
+%= 	                    |
+>>= 	                  |
+<<= 	                  |
+&= 	                    |
+^=	                    |
+|=	                    |
+-----------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------
+Comma                   |      ,                          |    left-to-right     |    evaluate a expression and then go to te next epxression. Forcesa a sqeuence of evaluations.
+-----------------------------------------------------------------------------------------------------
+
+
+
+To make sure you understood it:
+
+3*5
+3*5+2
+3*(5+2)
+
+5%3
+3%5
+-5%3
+
+5<7+2
+7>5+2
+(5<7)+2
+
+8 == -8
+8 == -(-8)
+8 == +8        -> +i is a urinary plus (see Expression_Evaluation.c)
+
+3/5            -> integer divide integer
+3.0/5          -> double divide integer
+3/5.0          -> integer divide double
