@@ -1,0 +1,71 @@
+Chapter 2 – Keywords
+
+KEYWORDS IN C: https://en.cppreference.com/w/c/keyword 
+KEYWORDS IN C++: https://en.cppreference.com/w/cpp/keyword 
+
+In this segment, we’ll discuss keywords in the C language, which are special reserved words. 
+In other programming languages, these are sometimes called reserved words. 
+These keywords cannot be used as identifiers (such as variable or function names), as they already have special meanings in the language.
+
+
+- Identifying Keywords
+The ANSI C standard recognizes a number of keywords. While there are additional keywords in some variations of C, we'll start by looking at the basic ones. 
+main is not a keyword! It might look like a keyword because it is used frequently, especially for the program entry point. It is simply an identifier used to define the starting point of a C program.
+
+
+- Preprocessor Directives vs. Keywords
+Another potential source of confusion is preprocessor directives, such as #include and #define. Although these words are used in C programming, they are not keywords. They have a special function in the C preprocessor, but aren’t reserved words within the C language itself.
+
+
+- Data Type Keywords
+Several keywords are used to define data types in C. These are part of the built-in or native data types in C:
+•	double
+•	float
+•	long
+•	char
+
+- Basic Data Types: int and char
+•	int: Used for integer values. The size of an int is typically one machine word (about 4 bytes on most systems). The range is usually between -2 billion and +2 billion, depending on the system.
+•	char: Used for storing characters. The char type is crucial for handling text in C.
+Both int and char can be modified by additional keywords like signed, unsigned, short, and long, which are used to alter their size or range. We will cover these modifications in more detail later.
+
+- Control Flow Keywords
+In C, there are several keywords that control the flow of the program. These keywords allow you to influence how the program moves through its code:
+•	break
+•	continue
+•	goto
+•	for
+•	if  &  else
+
+- Using if and else
+Later, we’ll explore the if-else statement, which is used for decision-making in C. We will focus on using if and else for control flow, and avoid using goto.
+
+- Avoiding goto
+goto allows jumping to any part of the program, which can make the code harder to read and maintain. Because of this, goto is considered obsolete, and many modern languages no longer support it. It’s best to use structured control flow keywords like if, for, while, etc., instead of goto.
+
+- The return Keyword
+In C, return is used to end the execution of the current function.
+•	If the function returns a value, return sends that value back to the function that called it.
+•	This allows the function to complete its task and pass a result back to the rest of the program.
+
+
+- Specialized Types: typedef, struct, and union
+Later in the course, we will explore advanced features like typedef, which allows us to give new names to existing types, especially compound types.
+•	struct: This is a type that groups different data elements together. struct will be used extensively in Part B of the course.
+•	union: This type allows multiple variables to share the same memory location, but only one can be used at a time. union is less commonly used and can generally be avoided in most cases.
+
+
+- Storage Classifications: auto, register, and static
+In C, storage classifications define how and where variables are stored. Two of these classifications, auto and register, are now considered obsolete and rarely used.
+•	auto is no longer needed, as it was originally used to specify local variables, but its functionality is effectively the default in modern C.
+•	register was intended to suggest that a variable should be stored in high-speed storage. However, modern compilers are much better at optimizing variable storage automatically. As a result, manual optimization with register is unnecessary and not commonly seen in modern C programs.
+While auto and register are rarely used today, static is still important. It is used for specific purposes, and we will explore its use in more detail later
+
+
+- C Keywords vs. C++ Keywords
+Get familiar with the C keyword list, which includes around 30 keywords. Most of these are critical concepts for understanding C. The nice thing about C is that it has a relatively small number of keywords, making it simpler to learn compared to other languages.
+In contrast, C++ has a much larger set of keywords—around 96. This makes C++ more complex, as it includes all the keywords from C, plus additional features and concepts. While C provides a foundation for transitioning to C++, we’re starting with C because it’s a more manageable subset.
+
+- C vs. C++ Complexity
+Modern C++ has roughly three times the number of keywords as C, which can make it more complex. However, it’s worth noting that you don’t have to use the full language of C++—it offers many optional features, so you can choose to work with only the parts you need.
+
