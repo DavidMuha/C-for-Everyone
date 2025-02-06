@@ -1,0 +1,61 @@
+Chapter 2 – Identifiers
+
+- int main ()
+.    main – identifier
+.    int  – keyword
+.    ( )  – used for a function call
+
+Id::={letter ∣ underscore}
+.     {letter ∣ underscore ∣ digit}
+
+- Usable (correct) identifiers
+.    K               -> one letter identifier (used for integers that are auxiliary integers 
+.    _printf         -> that’s probably the identifier that the system programmers use when they design the printf function
+.    two_words       -> the underbar is used to separate distinct words
+.    twoWords        -> the capitalization beginning of the second word is also commonly used (DO NOT MIX THE TWO!)
+.    my_dna23        -> once we are past the first digits we can use digits in the identifier as well 
+
+
+- Unusable (incorrect) identifiers
+.    #me       -> sharp (#) is not allowed anywhere
+.    me#  
+
+.    -x        -> x could be an identifier but -x is an expression
+.
+.    23my_dna  -> the first letter of that sequence is not allowed to be a digit
+
+
+
+- Good choice of identifiers (id’s) should improve: document & readability
+
+Standard library
+.    main
+.    printf
+.    sqrt
+
+“clearer image” identifiers
+.    superman
+.    radius
+
+in mathematics community
+.    i
+.    j
+.    k
+.    n
+
+- bad choices for identifiers
+
+no concept of what they might be 
+.    grx33   
+.   _pp_25
+makes sense, but mixed two conventions
+.    I_am_fourWords
+
+
+- “Unknown” ground – not sure if good or bad (all about context)
+.    data
+.    mxyzptlk     -> a typical foe of superman
+.    x            -> good as a coordinate in the xy plane 
+.    j
+.    q            -> in the logic community, P and Q are typically chosen to mean Boolean variables
+
