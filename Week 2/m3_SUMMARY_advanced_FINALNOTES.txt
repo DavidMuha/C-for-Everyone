@@ -1,0 +1,204 @@
+ENTIRE ADVANCED JOURNEY SUMMARY
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Exercise 15:
+
+(Suggested to us by Donald Knuth at Stanford University.) 
+
+In the running_sum program in Section 1.6, “Flow of Control,” on page 25, we first computed a sum and then divided by the number of sums to compute an average. 
+The following program illustrates a better way to compute the average:
+
+    /* Compute a better average. */
+    #include <stdio.h>
+
+    int main(void)
+    {
+        int i;
+        double x;
+        double avg = 0.0;  /* a better average */
+        double navg;       /* a naive average */
+        double sum = 0.0;
+
+        printf("%5s%17s%17s%17s\n",
+               "Count", "Item", "Average", "Naive avg",
+               "_______", "_______", "________", "_______");
+
+        for (i = 1; scanf("%lf", &x) == 1; ++i) {
+            avg += (x - avg) / i;
+            sum += x;
+            navg = sum / i;
+            printf("%5d%17.7e%17.7e%17.7e\n", i, x, avg, navg);
+        }
+        return 0;
+    }
+
+Run this program so that you understand its effects. 
+Note that the better algorithm for computing the average is embodied in the line:
+
+    avg += (x - avg) / i;
+
+
+Explain why this algorithm does, in fact, compute the running average. 
+Hint: Do some simple hand calculations first.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Exercise 16:
+
+In the previous exercise, we used the algorithm suggested to us by Donald Knuth to write a program that computes running averages. 
+In this exercise, we want to use that program to see what happens when sum gets too large to be represented in the machine. 
+(See Section 3.6, “The Floating Types,” on page 119, for details about the values a double can hold.) 
+Create a file, say data, and put the following numbers into it:
+
+    1e308 1 1e308 1 1e308
+
+Run the program, redirecting the input so that the numbers in your file data get read in. 
+Do you see the advantage of the better algorithm?
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Exercise 17 (ADVANCED):
+
+In this exercise you are to continue the work you did in the previous exercise.
+If you run the better_average program taking the input from a file that contains some ordinary numbers, then the average and the naive average seem to be identical.
+Find a situation where this is not the case. That is, demonstrate experimentally that the better average really is better, even when sum does not overflow.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+MY JOURNEY COMPLETING THE EXERCISES.
+
+The program calculates a "better average" and a "naive average" and adds them / is recalculated after user input.
+
+Definitions:
+
+    i = number of inputs
+    x = input value
+    avg = average (initially set to 0.0)
+    navg = naive average
+
+
+Better Average:
+
+    avg += (x - avg) / i
+
+Naive Average:
+    sum += x
+    navg = sum / i
+
+
+Why the "naive average" is worse:
+
+    For each new input x, the sum must be recalculated and overwritten (sum += x).
+
+    Only after that can the new average be calculated.
+
+
+The "better average" method does not need to store an additional value, as it performs everything in a single calculation.
+
+    -> If x is greater than the current average (e.g., x = 10, avg = 5), a positive value is added to the current average, making it larger.
+    -> If x is smaller, a negative value is added accordingly, making the average decrease.
+
+
+What I have done so far:
+
+    Understood what the code and the output do, and entered my own test values.
+
+    Learned how to use a .txt file as input for the program (input redirection).
+
+    Conducted experiments with different variable limits:
+        -> Tested the effects of very large numbers.
+        -> Tried different data types (double, long double).
+
+Current task / problem:
+    
+    If you run the better_average program taking the input from a file that contains some ordinary numbers, then the average and the naive average seem to be identical.
+    Find a situation where this is not the case.
+    That is, demonstrate experimentally that the better average really is better, even when sum does not overflow.
+
+
+Previous attempts at solutions:
+
+    Wrote my own program that generates numbers as input – with exponential growth of 1.00001, 1.5, and 2.0.
+
+    The loop should stop as soon as avg and navg differ.
+
+
+After... many tests, I found the following:
+
+    The loop breaks after the first iteration (see Image 1).
+
+    If I allow a small tolerance (max 0.000001 deviation), the average values remain the same for a long time.
+    
+    -> Only when the number of iterations is high enough that the limits of double or long double are exceeded, do only inf (infinite) values appear... so the averages remain "forever" the same length.
+
+
+
+Reattempt:
+
+    Created a new file with the main code (without all of the extra lines of code added to make the loop-attempt work)
+
+    Added a comparison check:
+        
+        // Check when averages become different
+        if (avg != navg)
+        {
+            printf("Averages are no longer identical at iteration %d\n", i);
+        }
+    
+    The oldinput.txt numbers were too big to check if the numbers differ without overflowing. So I:
+    -> changed the "repetition" from 1 -> 1e308 -> 1 -> 1e308 to 1 -> 1e30 -> 1 -> 1e30  (and made that repeat a little longer than the oldinput)
+
+
+OUTPUT:
+
+    coder@22b399fb3978:~/project$ cd "Week 2"
+
+    coder@22b399fb3978:~/project/Week 2$ gcc m2_SUMMARY_advanced_reattempt.c -o compute_average
+
+    coder@22b399fb3978:~/project/Week 2$ ./compute_average < m2_SUMMARY_advanced_reattempt_oldinput.txt
+
+    Count             Item          Average        Naive avg
+     ____            _____         ________         ________
+        1    1.000000e+308    1.000000e+308    1.000000e+308
+        2     1.000000e+00    5.000000e+307    5.000000e+307
+        3    1.000000e+308    6.666667e+307              inf
+    Averages are no longer identical at iteration 3
+        4     1.000000e+00    5.000000e+307              inf
+    Averages are no longer identical at iteration 4
+        5    1.000000e+308    6.000000e+307              inf
+    Averages are no longer identical at iteration 5
+
+
+    coder@22b399fb3978:~/project/Week 2$ ./compute_average < m2_SUMMARY_advanced_reattempt_newinput.txt
+
+    Count             Item          Average        Naive avg
+    ____            _____         ________         ________
+        1     1.000000e+30     1.000000e+30     1.000000e+30
+        2     1.000000e+00     5.000000e+29     5.000000e+29
+        3     1.000000e+30     6.666667e+29     6.666667e+29
+        4     1.000000e+00     5.000000e+29     5.000000e+29
+        5     1.000000e+30     6.000000e+29     6.000000e+29
+    Averages are no longer identical at iteration 5
+        6     1.000000e+00     5.000000e+29     5.000000e+29
+    Averages are no longer identical at iteration 6
+        7     1.000000e+30     5.714286e+29     5.714286e+29
+        8     1.000000e+00     5.000000e+29     5.000000e+29
+        9     1.000000e+30     5.555556e+29     5.555556e+29
+    Averages are no longer identical at iteration 9
+       10     1.000000e+00     5.000000e+29     5.000000e+29
+       11     1.000000e+30     5.454545e+29     5.454545e+29
+    Averages are no longer identical at iteration 11
+       12     1.000000e+00     5.000000e+29     5.000000e+29
+    Averages are no longer identical at iteration 12
+       13     1.000000e+30     5.384615e+29     5.384615e+29
+    Averages are no longer identical at iteration 13
+       14     1.000000e+00     5.000000e+29     5.000000e+29
+    Averages are no longer identical at iteration 14
+       15     1.000000e+30     5.333333e+29     5.333333e+29
+    Averages are no longer identical at iteration 15
+       16     1.000000e+00     5.000000e+29     5.000000e+29
+    Averages are no longer identical at iteration 16
+       17     1.000000e+30     5.294118e+29     5.294118e+29
+    Averages are no longer identical at iteration 17
