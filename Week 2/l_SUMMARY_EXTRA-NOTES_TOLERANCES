@@ -1,0 +1,125 @@
+How Tolerances Work in Floating-Point Comparisons
+
+    When working with floating-point numbers (float, double, long double), exact comparisons using == are unreliable due to small rounding errors that occur in floating-point arithmetic. 
+    This is why we use tolerance-based comparisons instead.
+
+
+1. Why We Need Tolerances
+
+    The Problem: Rounding Errors
+
+        Floating-point numbers are stored in binary, and not all decimal values can be represented exactly.
+        Small inaccuracies accumulate when performing arithmetic operations.
+
+        Example:
+        
+            doublea = 0.1 * 3; //Expected: 0.3
+            double b = 0.3;
+            it (a == b) 
+            {
+                printf("Equal\n");
+            } 
+            else
+            {
+                printf("Not Equal\n");
+            }
+        
+        Output: Not Equal
+    
+        Even though mathematically 0.1 * 3 == 0.3, small floating-point errors cause them to be slightly different in memory.
+    
+
+    Solution: Use a Tolerance
+    
+    Instead of:
+        if (avg == navg) //BAD: can fail due to precision errors
+    
+    We check if the difference between the two values is small enough to be considered equal:
+            if (fabs(avg - navg) > 1e-6) //GOOD: Uses a tolerance
+
+
+
+2. Types of Tolerances
+There are two main types of tolerances used in floating-point comparisons:
+
+    (A) Absolute Tolerance (fabs(avg - navg) > ε)
+
+        -> Checks if the absolute difference between avg and navf is larger than a small threshold ε (epsilon).
+
+        -> Works well when numbers are small
+
+        Example:
+            if (fabs(avg - navg) > 1e-9) //if difference is greater tan 0,0000000001
+
+        Limitations:
+            Fails for every large number (e.g. 1e10 abd 1e10 + 0.001 are almost identical relative to their size, but would fail the test)
+        
+
+    (B) Relative Tolerance ( fabs(avg - navf) / fabs(navg) > ε)
+        
+        -> Compares the difference relative to the magnitude of the numbers
+
+        -> Prevents false positives when dealing with large numbers
+
+        Example:
+            if(fabs(avg - navg) / fabs(navg) > 1e-6)
+        
+        Why? 
+            This accounts for scale. If avg = 1e10 and navg 1.0000001e10, the difference is tiny relative to the numbers, so the averages should still be considered equal.
+    
+
+
+3. Choosing the right tolerance
+
+    SCENARIO                       BEST TOLERANCE TYPE                      Example
+------------------------------------------------------------------------------------------------------------------------------------------------------
+    Comparing small numbers        Absolute Tolerance                       if(fabs(abg - navg) > 1e-9)
+    (e.g, 0.1, 0.2, 0.00001)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+    Comparing large numbers        Relative Tolerance                       if (fabs(avg - navg) / fabs(navg) > 1e-6)
+    (1e10, 1e20)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+    General case (both small       Hybrid Approach:                         if (fabs(avg - navg) > 1e-9 && fabs(avg - navg) / fabs (navg) > 1e-6)
+    and large numbers)             Absolute tolerance for small num,
+.                                  relative tolerance for large num,
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+4. Applyin Tolerance to your Code
+
+    Example 1: Using Absolute Tolerance
+
+        ##include <stdio.h>
+        ##include <math.h> //needed for fabs()
+
+        int main(void)
+        {
+            double avg = 1.0000001, navg = 1.0000002;
+
+            if (fabs(avg - navg) > 1e-6) //smallest accepted difference is 0,000001
+            {
+                printf("Averages are no longer identical\n");
+            }
+            else
+            {
+                printf("Averages are still considered equal\n");
+            }
+
+            return 0;
+        }
+
+    
+    Example 2: Using Relative Tolerance
+
+        if (fabs(avg - navg) / fabs(navg) > 1e-6)
+        {
+            printf("Averages are no longer identical\n");
+        }
+
+
+    Example 3: Hybrid Approach
+        
+        if (fabs(avg - navg) > 1e-9 && fabs(avg - navg) \ fabs(navg) > 1e-6)
+        {
+            printf("Averages are no longer identical\n");
+        }
