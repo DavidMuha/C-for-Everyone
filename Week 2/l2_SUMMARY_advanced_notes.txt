@@ -1,0 +1,421 @@
+/*  Compute a better average 
+    Summary exercises */
+
+#include <stdio.h>
+
+int main(void)
+{
+    int i;
+    double x;
+    double avg = 0.0; //a better average
+    double navg; //a naive average
+    double sum = 0.0;
+
+    printf("%5s%17s%17s%17s\n%5s%17s%17s%17s\n", "Count", "Item", "Average", "Naive avg", "_____", "_____", "_____", "_____");
+
+    for (i = 1; scanf("%lf", &x) == 1; ++i){
+        avg += (x - avg) / i;  //better average
+        
+        sum += x;         //naive average 
+        navg = sum / i;
+        
+        printf("%5d%17e%17e%17e\n", i, x, avg, navg);
+    }
+    return 0;
+}
+
+------------ABOVE IS THE CODE WRITTEN WITH double-----------------------------------------------------------------
+
+
+redirecting the .txt file with the numbers...
+    1e308
+    1
+    1e308
+    1
+    1e308
+
+... into the code, will give the following outcome:
+
+    Count             Item          Average        Naive avg
+    _____            _____            _____            _____
+        1    1.000000e+308    1.000000e+308    1.000000e+308
+        2     1.000000e+00    5.000000e+307    5.000000e+307
+        3    1.000000e+308    6.666667e+307              inf
+        4     1.000000e+00    5.000000e+307              inf
+        5    1.000000e+308    6.000000e+307              inf
+
+
+1. Floating-Point Precision in double
+    double is a 64-bit floating-point type that can represent values approximately up to 1.797×10³⁰⁸ .
+    When summing large numbers like this one, double quickly approaches its maximum representable value, leading to overflow.
+
+    Overflow: results to inf (infinity), which propagates through subsequent calculations.
+
+
+2. Explanation of Results
+
+First Iteration:
+----------------------------------------------------------
+  Item: 1×10³⁰⁸
+    The program reads the first value and processes it.
+
+Better Average:
+  The formula avg += (x - avg) / i calculates:
+
+.             (1 x 10³⁰⁸ - 0)
+    avg = 0 +        1        = 1 x 10³⁰⁸
+
+  Results: 1 x 10³⁰⁸
+
+Naive Average:
+  sum += x adds 1 x 10³⁰⁸ to the sum
+  navg = sum / i calculates:
+
+          1 x 10³⁰⁸
+   navg =   1       =  1 x 10³⁰⁸
+-----------------------------------------------------------
+  results: 1 x 10³⁰⁸
+-----------------------------------------------------------
+
+
+Second Iteration
+-----------------------------------------------------------
+  Item: 1
+    A smaller value 1 is added to the running averages.
+
+Better Average:
+  The formula updates the average incrementally:
+
+.                     (1 - 1 x 10³⁰⁸)
+    avg = 1 x 10³⁰⁸ +      2
+
+  Since 1 is insignificant compared to 1 x 10³⁰⁸, the difference is effectively 0, and the average adjusts slightly:
+    avg ≈ 5 x 10³⁰⁷
+
+
+Naive Average:
+  The naive summation adds 1 to 1 x 10³⁰⁸, but 1 is so small compared to 1 x 10³⁰⁸ that the result is still 1 x 10³⁰⁸ due to floating-point precision limits.
+
+  navg = sum / 2 calculates:
+
+.          1 x 10³⁰⁸
+    navg =   2       =  5 x 10³⁰⁷
+-------------------------------------------------------------------------------------------------------------------
+
+
+Third Iteration:
+-------------------------------------------------------------------------------------------------------------------
+Item: 1 x 10³⁰⁸
+  A large value 1 x 10³⁰⁸ is added again.
+
+Better Average:
+  The formula updates incrementally:
+
+.                      (1 x 10³⁰⁸ - 5 x 10³⁰⁷)
+.    avg = 5 x 10³⁰⁷ +            3
+
+  The average adjusts upward, resulting in:
+    avg ≈ 6.67 x 10³⁰⁷
+
+
+Naive Average:
+  The naive summation adds 1 x 10³⁰⁸ to the sum. The sum now axceeds te representable range of double:
+  
+    sum 1 x 10³⁰⁸ + 1 x 10³⁰⁸ = ∞
+  
+  Any calculation involving inf propagates as inf, so navg becomes:
+
+.            ∞
+.    navg =  3  =  ∞
+--------------------------------------------------------------------------------------
+
+
+Fourth and Fifth Iterations
+--------------------------------------------------------------------------------------
+The same pattern repeats
+  Better Average: Continues to adjust incrementally, staying numerically stable.
+  Naive Average: Remains inf because the sum has already overflowed in the third iteration.
+--------------------------------------------------------------------------------------
+
+
+3. Why Does the Naive Average Fail?
+
+The naive summation (sum += x) directly accumulates large values. Once the sum exceeds 1.797 x 10³⁰⁸, it overflows and becomes inf. 
+
+This is because:
+  Floating-point numbers in double have a limited range.
+
+  Adding a value to inf results in inf, and any arithmeric operation involving inf propagates the inf result.
+
+
+------------------------------------------------------------------------------------------------------------------
+
+4. Why Does the Better Average Work?
+
+The better average algorithm:
+
+.        (x - avg)
+  avg +=    i
+
+  Avoids direct summation of large numbers.
+
+  Adjusts the average incrementally, ensuring that even small values like 1 are taken into account proportionally.
+
+  The difference (x - avg) prevents overflow because it avoids summing two very large numbers directly.
+
+
+-------------------------------------------------------------------------------------------------------------------
+
+5. Key Takeaways
+
+  The better average is a numerically stable algorithm that avoids direct summation.
+
+  The naive average is limited by the precision and range of double and fails when the sum overflows.
+
+  For handling large numbers, use better algorithms and higher-precision types like long double.
+
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+int main(void)
+{
+    int i;
+    long double x;
+    long double avg = 0.0; //a better average
+    long double navg; //a naive average
+    long double sum = 0.0;
+
+    printf("%5s%17s%17s%17s\n%5s%17s%17s%17s\n", "Count", "Item", "Average", "Naive avg", "_____", "_____", "_____", "_____");
+
+    for (i = 1; scanf("%Lf", &x) == 1; ++i){
+        avg += (x - avg) / i;  //better average
+        
+        sum += x;         //naive average 
+        navg = sum / i;
+        
+        printf("%5d%17Le%17Le%17Le\n", i, x, avg, navg);
+    }
+    return 0;
+}
+
+
+--- ABOVE IS THE CODE WRITTEN WITH LONG DOUBLE ----------------------------------------------------------
+
+
+Redirecting the same .txt file with the numbers...
+
+1e308
+1
+1e308
+1
+1e308
+
+... into the code will give the following outcome:
+
+Count           Item              Average              Naive avg
+-----------------------------------------------------------------
+  1      1.000000e+308      1.000000e+308       1.000000e+308
+  2      1.000000e+000      5.000000e+307       5.000000e+307
+  3      1.000000e+308      6.666667e+307       6.666667e+307
+  4      1.000000e+000      5.000000e+307       5.000000e+307
+  5      1.000000e+308      6.000000e+307       6.000000e+307
+
+Observations:
+- Both "Better average" and "Naive avg" compute correctly with `long double`.
+- The improved range of `long double` avoids overflow, even for the naive summation.
+
+
+
+1. long double Overview
+
+long double provides a wider range and higher precision than double. On most systems:
+
+  double typically supports ~15-16 decimal digits of precision, while long double supports ~18-21 decimal digits (depending on the compiler and system architecture).
+
+  The maximum representable value for long double is much larger than that of double, often around 1.180 x 10⁴⁹³² on x86 systems (with 80-bit long double).
+
+
+This extended range allows the program to handle significantly larger values without immediately overflowing.
+
+
+
+------------------------------------------------------------------------------------------------------------------------------
+
+
+2. Analysis of long double Results
+
+Using the same input file:
+
+  1e308
+  1
+  1e308
+  1
+  1e308
+
+
+Iteration 1:
+---------------------------------------------------------------------------------------------------------------------------------------------
+Item: 1 x 10³⁰⁸
+
+Better Average:
+.                           (1 x 10³⁰⁸ - 0)
+  Formula:       avg =  0 +       1         =  1 x 10³⁰⁸
+
+  The first value becomes the running average
+  
+  result: 1 x 10³⁰⁸
+
+
+Naive Average: 
+
+  Sum:    sum = 0 + 1 x 10³⁰⁸ = 1 x 10³⁰⁸
+
+.                          1 x 10³⁰⁸
+  Naive average:    navg =    1      =  1 x 10³⁰⁸
+
+  Result: 1 x 10³⁰⁸
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Iteration 2
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+Item: 1
+
+Better Average:
+
+.                                   (1 - 1 x 10³⁰⁸)
+  Formula         avg = 1 x 10³⁰⁸ +        2
+
+  Since 1 is miniscule compared to 1 x 10³⁰⁸, its effect on the average is negligible. 
+  
+  The average adjusts downward slightly:  avg ≈ 5 x 10³⁰⁷
+
+
+Naive Average:
+
+  Sum:      sum = 1 x 10³⁰⁸ + 1
+  
+    Adding 1 to 1 x 10³⁰⁸ doest not change the sum because 1 is too small to effect the precision
+
+    result 1 x 10³⁰⁸
+
+.                          1 x 10³⁰⁸
+  Naive average:    navg =   2       = 5 x 10³⁰⁷
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Iteration 3
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Item: 1 x 10³⁰⁸
+
+Better Average:
+
+.                                 (1 x 10³⁰⁸ - 5 x 10³⁰⁷)
+  Formula:      avg = 5 x 10³⁰⁸ +            3
+
+  The difference between 1 x 10³⁰⁸ and 5 x 10³⁰⁷ is 5 x 10³⁰⁷, which is divided by 3 and added to te average.
+
+.           avg ≈ 6.66667 x 10³⁰⁷
+
+
+Naive Average:
+
+  Sum:       sum = 5 x 10³⁰⁸ + 1 x 10³⁰⁸  =  2 x 10³⁰⁸
+
+    With long double, the sum does not overflow
+
+.                              2 x 10³⁰⁸
+  Naive average:        navg =    3      = 6.66667 x 10³⁰⁷
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Iteration 4
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Item: 1
+
+Better Average
+
+.                            (1 - 6.666667 x 10³⁰⁷)  
+  Formula: 6.66668 x 10³⁰⁷ +           4
+
+    the difference is approimately -6,66667 x 10³⁰⁷. 
+
+    Divided by 4, he average justs slightly downword:     avg ≈ 5 x 10³⁰⁷
+  
+  
+Naive Average:
+
+  Sum: sum = 2 x 10³⁰⁸ + 1 = 2 x 10³⁰⁸
+
+  Adding 1 does not effect the sum due to precision limits.
+
+.                2 x 10³⁰⁸
+  Naive average:   4        =  5 x 10³⁰⁷
+-----------------------------------------------------------------------------------------
+
+
+Iteration 5
+-----------------------------------------------------------------------------------------
+
+  Item: 1 x 10³⁰⁸
+
+Better Average:
+
+.                       (1 x 10³⁰⁸ - 5 x 10³⁰⁷)
+  Formula:  5 x 10³⁰⁷ +            5
+
+  The difference is 5 x 10³⁰⁷, divided by 5 resultin in:    avg = 6 x 10³⁰⁷
+
+Naive Average:
+  
+  Sum: 2 x 10³⁰⁸ + 1 x 10³⁰⁸ = 3 x 10³⁰⁸
+
+  The sum remains valid without overflow
+
+.                 3 x 10³⁰⁸
+  Naive average:     5      =  6 x 10³⁰⁷
+------------------------------------------------------------------------------------------
+
+
+Observations with long double:
+
+1. Better Average
+  Remains numerically stable and produces accurate results
+
+  Handles both large and small values effectively without losing precision
+  
+  Avoids direct summation, making the risk of overflow less likely to happen.
+
+2. Naive Average:
+  Works correctly with long double because the extended range prevents overflow
+  
+  However, the naive summation is still less stable for cases with extremely large differences in magnitude, as smaller values may be ignored.
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Key Differences between double and long double
+
+  with double, the naive summation overflows at the 3rd iteration, making further calculations invalid
+
+  with long double, the program processes all iterations correctly, as the larger range accomodates the sum without overflowing
+  but even with long double, the risk of overflowing with better average is less likely, because it completely avoids summation before calculating the new average (summation at some point being bigger then the long double limit)
+
+
+Conclusion
+  Using long double improves the performance of the naive summation by preventing overflow, but the better average algorithm remains the superior choice due to its numerical stability.
+  Even if larger values or higher precision are required, the better average's incremental approach ensures consistent results.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
