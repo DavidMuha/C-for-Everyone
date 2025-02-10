@@ -1,0 +1,1167 @@
+
+(Advanced) In this exercise you are to continue the work you did in the previous exercise. 
+If you run the better_average program taking the input from a file that cointains some ordinary numbers, then the average and the naive average seem to be identical.
+Find a situation where this is not the case.
+That is, demonstrate experimentally that the better average really is better, even when sum does not overflow.
+
+
+
+Idea:  write a program that,
+
+prints a loop where a new number keeps getting added to the average (identical vs loop that changes the number added). 
+The value of the better avarage and the one from naive average should determine whether the loop continues or stops - when the numbers arent identical anymore, the loop exits. 
+
+to run the file, the output of the redirection should be analysed - not the program itself (see notes - week 3)
+
+
+takeaway of "SUMMARY_COMPUTE_AVERAGE_MAIN.C" & "SUMMARY_COMPUTE_AVERAGE_ADCANVED.C": FAILED
+
+The numbers will just keep getting bigger and bigger (tested both with 1.5 and 2 exponential rate) until it reaches the limits of the variable (checked for both double and long double)
+-> didnt prove that one was better than the other
+-> it did overflow - which was speciifically request for it not to happen
+
+
+
+
+Documentation on what I tried to do ("failed attempt")
+---------------------------------------------------------------------------------------------------------------
+
+1. Initial Exploration
+    You shared the assignment: Demonstrate that the better average is superior to the naive average without relying on overflow.
+
+    Initial Ideas:
+        Create an infinite loop that prints numbers as input for the averages.
+        Use a condition in the main program to stop when averages diverge.
+
+2. Output Redirection vs Pipe
+    Discussion: Why use a pipe (|) instead of redirecting output to a file? The pipe avoids writing an infinite number of values to a file and feeds input directly into the main program.
+    Realization: Writing to a file is inefficient for this task.
+
+3. Progressing with Exponential Growth
+    Implemented Idea:
+        Used a program (generate_numbers) to produce exponentially growing numbers (e.g., multiplying by 1.5 or 2).
+        Averages (better and naive) were computed in a second program (compute_average_main).
+    Observed Results: 
+        Overflow occurred, and inf/nan appeared. However, no divergence was detected before the overflow.
+
+4. Adding Post-Divergence Printing
+    Enhanced the Code:
+    Print the 50 iterations following divergence to analyze the behavior of the averages.
+    This helped confirm that both averages remained identical until long double overflowed.
+
+5. Discussion on Divergence
+    Challenge: Could not demonstrate divergence of better and naive averages without overflow.
+    Attempted Inputs: Controlled exponential growth, absolute/relative tolerances, and adjusting iteration limits. Divergence still wasn't observed before reaching the numerical limits of long double.
+
+6. Realization of Input Impact
+    Discussion Point: Current exponential growth overshadowed differences between the averages. The better and naive averages were indistinguishable due to the precision range of long double.
+
+7. Shift in Focus
+    Key Insight: To prove the better average's superiority, the input must highlight floating-point inaccuracies without allowing numbers to grow exponentially.
+    Frustration: Feeling that the attempt failed to accomplish the assignment's goal, as no divergence was shown before overflow.
+
+8. End of Attempt
+    The chat transitioned into discussing how to refocus on the assignment goal and design an experiment with controlled inputs to prove divergence.
+------------------------------------------------------------------------------------------------------------------------------
+
+Why Use a Pipe Instead of Output Redirection?
+
+Output Redirection (>):
+
+    What It Does:
+        Redirects the output of one program to a file.
+        
+        For example: This command writes all numbers produced by generate_numbers into output.txt.
+            ./generate_numbers > output.txt
+
+            
+    Why It’s Inefficient Here:
+        
+        For infinite or very large data streams (like exponentially growing numbers), output redirection will:
+            Consume disk space rapidly.
+            Write all numbers to the file, even though only a portion is needed for analysis.
+        Reading the file afterward in the second program (compute_average_main) introduces additional delays because of I/O operations.
+    
+    When It’s Useful:
+        For debugging or when data needs to be stored for later use.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Pipe (|):
+
+    What It Does:
+
+        Directly connects the output of one program to the input of another, without writing to a file.
+
+    For example:
+        
+        ./generate_numbers | ./compute_average_main
+
+        This sends the numbers generated by generate_numbers directly to compute_average_main.
+
+    Why It’s Better Here:
+
+        No Disk Space Consumption:
+            Data flows directly between the programs without being saved to a file.
+
+        Real-Time Processing:
+            The second program starts processing numbers immediately, without waiting for the first program to finish.
+        
+        Efficient for Large or Infinite Streams:
+            Since no intermediate file is created, you can work with infinite streams of data.
+
+    When to Use It:
+        When the output of one program is only needed as input for another program, especially for large or infinite data streams.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Example: Output Redirection vs Pipe
+
+Let’s assume generate_numbers produces exponentially growing numbers, and compute_average_main calculates the averages.
+
+Using Output Redirection:
+        ./generate_numbers > output.txt
+        ./compute_average_main < output.txt
+
+    Process:
+        First, all numbers are written to output.txt.
+        Then, compute_average_main reads from output.txt.
+
+    Issues:
+        For infinite or very large outputs, output.txt will grow indefinitely, consuming disk space.
+        Processing is slower due to disk I/O (input/output)
+
+
+Using a Pipe:
+        ./generate_numbers | ./compute_average_main
+
+    Process:
+        Numbers are sent directly from generate_numbers to compute_average_main as they are generated.
+
+    Advantages:
+        No disk space is used.
+        Faster processing due to the elimination of intermediate file operations.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+QUESTION: 
+Regarding the pipe, is it possible to create a function in the main program that only becomes relevant after interacting with the secondary program? 
+What I was considering was defining a variable or some reference in the main program that, through the pipe (since it operates in real time for both programs), can signal the secondary program to stop printing once a specific condition in the main program is met. 
+Initially, this function wouldn't make sense on its own in the main program, but it would become functional once the two programs interact.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Ah, you're thinking of creating a feedback mechanism between the two programs via the pipe, where the main program can influence the behavior of the generating program (generate_numbers) in real-time! 
+This is an interesting concept, but it introduces some challenges because pipes are unidirectional.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Can You Create a Function in the Main Program That Affects the Generating Program?
+
+How Pipes work
+
+    Unindirectional Data Flow:
+
+        In a typical pipe setup:
+            ./generate_numbers | ./compute_average_main
+    
+    Limitation
+        The generating program (generate_numbers) has no knowledge of what's happening in the main program (compute_average_main) becase there's no feedback channel
+
+
+Is it possible to Stop the generating program dynamically?
+
+    Question 1: Add Feedback using a signal
+        Modify the generating program to check for external signals (e.g. SIGTERM) that indicate it should stop
+        In the main program, when the condition is met, it sends a signal to terminate the generating program
+    
+    Implementing steps
+
+        Modify generate_numbers to Handle Signals: Add a signal handler to stop the loop:
+
+            #include <signal.h>
+            #include <stdbool.h>
+            #include <stdio.h>
+
+            volatile bool keep_running = true;
+
+            void handle_signal(int signal) {
+                keep_running = false;  //Stop the loop on receiving SIGTERM
+            }
+
+            int main(void) {
+                signal(SIGTERM, handle_signal);   //Set up the signal handler
+                double value = 1.0;
+                while (keep_running) {
+                    printf("%e\n", value);
+                    value *= 1.5; // Growth factor
+                }
+                return 0;
+            }
+
+        Modify compute_average_main to Send the Signal: Wen a condition is met in compute_average_main, send a SIGTERM signal to the generating program:
+
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <math.h>
+            #include <unistd.h>
+
+            int main(void) {
+                int i;
+                long double x, avg = 0.0, navg = 0.0, sum = 0.0;
+                pid_t generate_pid = getppid(); // Get the PID of the generating program
+
+                for (i = 1; scanf("%Lf", &x) == 1; ++i) {
+                    avg += (x - avg) / i; // Better average
+                    sum += x;             // Naive sum
+                    navg = sum / i;
+
+                    if (fabsl(avg - navg) > 1e-9) { // Condition met
+                        printf("Divergence detected at iteration %d\n", i);
+                        kill(generate_pid, SIGTERM); // Stop the generating program
+                        break;
+                    }
+                }
+                return 0;
+            }
+
+
+    Run the programs together:
+
+        ./generate_numbers | .compute_average_main
+
+        When compute_average_main detects a divergence, it sends a SIGTERM to stop generate_numbers
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Option 2: Use a Named Pipe (Bidirectional Communication)
+
+    A named pipe (FIFO) can allow bidirectional communication between the two programs.
+
+    How it works:
+
+        The generating program writes numbers to the named pipe
+
+        The main program reads the numbers and writes a "stop signal" back into the pipe when a condition is met.
+
+    Implementation pipe
+
+        Create a nammed pipe:
+
+            mkfifo contol_pipe
+
+        Modify generate_numbers to Listen for Stop Signal:
+
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <stdbool.h>
+            #include <unistd.h>
+
+            int main(void) {
+                FILE *control = fopen("control_pipe", "r");
+                double value = 1.0;
+
+                while (true) {
+                    printf("%e\n", value);
+                    value *= 1.5;
+
+                    // Check for stop signal
+                    char signal;
+                    if (fread(&signal, 1, 1, control) > 0 && signal == 'S') {
+                        break;
+                    }
+                }
+                fclose(control);
+                return 0;
+            }
+
+
+        Modify compute_average_main to Send Stop Signal:
+
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <math.h>
+
+            int main(void) {
+                FILE *control = fopen("control_pipe", "w");
+                int i;
+                long double x, avg = 0.0, navg = 0.0, sum = 0.0;
+
+                for (i = 1; scanf("%Lf", &x) == 1; ++i) {
+                    avg += (x - avg) / i; // Better average
+                    sum += x;             // Naive sum
+                    navg = sum / i;
+
+                    if (fabsl(avg - navg) > 1e-9) { // Condition met
+                        printf("Divergence detected at iteration %d\n", i);
+                        fwrite("S", 1, 1, control); // Send stop signal
+                        break;
+                    }
+                }
+                fclode(control);
+                return 0;
+            }
+        
+    Run the Programs Together:  ./generate_numbers < control_pipe | ./compute_average_main > control_pipe
+
+        The main program sends a "stop signal" ('S') back to the generating program when divergence is detected.
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Which Option should you choose?
+
+Option 1 (Signals):
+    Easier to implement
+
+    Suitable for most cases where you just need to stop the generating program
+
+Option 2 (Named Pipes)
+    Allows more complex communication between.
+
+    Useful if you need more than a simple stop signal.
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+SUMMARIZED/UPDATED
+
+Why use a pipe instead of output redirection?
+
+
+Output Redirection (>):
+    Redirects output from one program into a file:
+        ./generate_numbers > output.txt
+    
+    Inefficient for infinite or large data streams:
+        Consumes disk space rapidly
+        
+        Introduces delays due to file I/O (input/output)
+
+Pipe (|):
+    Directly streams the output of one program to the input of another in real-time:
+        ./generate_numbers | ./compute_average_main
+    
+    Benefits:
+        No intermediate files or disk space usage
+
+        Enables efficient, real-time processing for large or infinite streams
+
+
+EPLANATION: Can the main program control the generating program via a pipe?
+
+    Unindirectional nature of pipes:
+        Pipes typically allow one-way communication: output from generate_numbers flows to compute_average_main
+    
+        The generating program doesn't "know" what the main program is doing.
+    
+
+    Potential Solutions to Enable Control:
+
+        Using Signals:
+            The main program sends a signal (e.g. SIGTERM) to stop the generating program when a condition is met
+        
+        Using Named Pipes (FIFO):
+            Enables two-way communication:
+                The generating program writes data
+
+                The main program sends a "stop signal" through the same or another named pipe
+        
+    
+    These approaches allow real-time interaction but require adjustments to both programs.
+    Pipes alone don't inherently support bidirectional feedback.
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+
+LOOKING AT CHAT
+
+
+Infinite Loop to Test the two Averages:
+
+    #include <stdio.h>
+
+    int main(void) {
+        double value = 1.0;  // Start with 1.0
+
+        // Print values in an infinite loop
+        while (1) {
+            printf("%e\n", value);
+            value *= 1.000001;  // Slowly increase the value to see differences
+        }
+        return 0;
+    }
+
+
+    for (i = 1; scanf("%lf", &x) == 1; ++1){
+        avg += (x - avg) / i;
+        sum += x;
+        navg = sum / i;
+
+        printf("%5d%17e%17e%17e\n", i, x, avg, navg);
+
+        //Break the loop when the averages are no longer identical
+        
+        if (avg != navg) {
+            printf("Averages are no longer identical at iteration %d\n", i);
+            break;
+        }
+    }
+
+
+Testing the Program
+
+    Once both program (generate_numbers.c and better_average) are modified, use a pipe:
+
+        ./generate_numbers | ./better_average
+    
+    The output will show:
+        The numbers being fed to the program
+        
+        The running averages (avg and navg)
+
+        The point will show where the two averages diverge
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+We are talking about creating a file with infinite numbers... what will happen?
+
+-> if you create a file with infiinte numberes, the program generating teh numbers will run forever and eventually.
+
+    Fill up your disk space: the file will gro indefinitely, consuming all available storage on your disk. Example: A program generating 1 billion floating-point numbers (each ~20 bytes) will create a file ~20 GB in size.
+
+    Potentially crash you system: once your disk space runs out, your system could become unresponsive or crash
+
+How to prevent infinite output:
+
+
+    #include <stdio.h>
+
+    int main(void) {
+        double value = 1.0;
+        int count = 0;
+
+        // Generate a limited number of values (e.g., 1 million)
+    
+        while (count < 1000000) {
+            printf("%e\n", value);
+            value *= 1.000001;  // Gradually increase the value
+            count++;
+        }
+
+        return 0;
+    }
+
+
+
+! keep in mind that the number is multiplied by 1.000001 -> although not infinite, reaching the output 1000000 will take A LOT of lines of code !
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+The main program will stop when the two averages won't be the same, but what happens do the program that generates the numbers?
+
+-> If the output program is generating numbers in an infinite loop, it will indeed keep running unsless it's explicitly terminated.
+-> This can lead to unnecessary resource usage.
+
+
+The output program is still running:
+
+    If you're piping (|) the output program into the main program, the output program will continue generating numbers, even though the main program has stopped reading them.
+
+    The unused data generated by the output program will "pile up" in the pipe buffer until it's full, at which point the output program will block (pause) until the buffer is cleared, which won't happen because the main program is no longer reading.
+
+No disk space issue:
+
+    Since the output program's numbers are going throught a pipe and not being written to a file, they won't comsume disk space
+
+    However, the output program will remain stuck in a blocked state, wasting CPU resources.
+
+
+
+HOW TO STOP THE OUTPUT PROGRAM WHEN THE MAIN PROGRAM EXITS
+
+1. Let the Pipe handle it
+
+    When the main program (better_average) exits, the pipe closes, which sends a signal to the output program that its output is no longer needer.
+
+    In most cases:
+
+        The output program will reveice a SIGPIPE signal when it tries to write to the closed pipe.
+
+        By default, the signal causes the output porgram to terminate.
+
+    
+    If generate_numbers handles SIGPIPE correctly, you don't need to do anything extra. 
+    However, if generate_numbers ignores the signal or doesn't terminate, see the next solution.
+
+
+2. Add logic to generate_numbers to detect the closed pipe
+
+    #include <stdio.h>
+    #include <unistd.h>
+
+    int main(void) {
+        double value = 1.0;
+
+        while (1) {
+            if (printf("%e\n", value) < 0) {
+                // Pipe is closed, stop generating numbers
+                break;
+            }
+            value *= 1.000001;  // Gradually increase the value
+        }
+
+        return 0;
+    }
+
+
+    Here: printf will return -1 when the pipe is closed & the program will terminate when it detects that the main program has exited.
+
+
+3.  Use a file instead of a pipe (manual termination required)
+
+    If you're using output redirection with a file, the output proram will continue running indefinitely unless you manually terminate it.
+
+        ./generate_numbers > numbers.txt
+        ./better_average < numbers. txt
+
+    In this case:
+        generate_numbers will fill the file numbers.txt until you manually stop it (e.g. with Ctrl + C)
+
+
+    To avoid this, combine this approach with limiting the number of values generated.
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+If the main program were to look for the EOF, what is happening?
+
+
+How Pipes and EOF work
+
+1. Basics of a Pipe
+
+    A pipe (|) connects the output of one program directly to the input of another program. It allows data to flow between programs without creating intermediate files.
+
+for "./generate_numbers | ./better_average" :
+
+    ./generate_numbers writes its output into the pipe.
+    ./better_average reads that output as its input.
+
+
+2. What happens when the main program expects EOF?
+
+    EOF (End-Of-File) is a special condition indicating that there is no more data to read. For your main program (better_average), EOF would occur when:
+
+    	The output program (generate_numbers) terminates.
+        The pipe closes because the output program stops writing.
+
+    Until EOF is encounteres: scanf (or any input function) in better_average will continue waiting for data from the pipe
+
+
+How This Works in Your Case
+
+Scenario 1: Output Program is Finite
+
+    If generate_numbers produces a set number of characters:
+    1. the output program writes all values into the pipe and then terminates
+    2. when the pipe closes, the main program will encounter EOF while reading from the pipe
+    3. main program will stop reading input and exit
+
+Scenario 2: Output Program is Infinite
+
+    If generate_numbers runs in an infinite loop, the pipe will never close on its own:
+    1. better_average will keep reading until its internal condition  (e.g. avg != navg) causes it to exit
+
+    When better_average exits:
+    1. The pipe closes automatically because the main program no longer exists to read data.
+    2. The ouput program will attempt to write to the closed pipe
+    3. This results in a SIGPIPE signal being sent to the output program, causing it to terminate
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+When running the program:   loop exits after the first iteration 
+
+    Count              Item                Average             Naive avg
+
+   ______             ______             _________           ___________
+       1        1.000000e+00          1.000000e+00          1.000000e+00
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+This could be due to:
+
+    1. Floating-point comparison issues: Floating-point values often have tiny rounding errors, so comparing them directly (avg != navg) may fail even when they seem equal.
+
+    2. Unexpected behavior in your scanf or input logic: This could also cause the loop to break unexpectedly.
+
+
+Fix 1: Use Tolerance for floating-point comparison
+
+    Instead of directly comparing avg and navg, introduce a small tolerance (e.g., 1e-6) to handle floating-point inaccuracies:
+
+        #include <math.h> // For fabs()
+
+        if (fabs(avg - navg) > 1e-6) // Use absolute difference
+        {
+            printf("Averages are no longer identical at iteration %d\n", i);
+            break;
+        }
+    
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SUMMARY_compute_average.c
+
+    #include <stdio.h>
+    #include <math.h> // For fabs()
+
+    int main(void)
+    {
+        int i;
+        double x;
+        double avg = 0.0; // A better average
+        double navg;      // A naive average
+        double sum = 0.0;
+
+        printf("%5s%17s%17s%17s\n%5s%17s%17s%17s\n", 
+               "Count", "Item", "Average", "Naive avg", 
+               "_____", "_____", "_____", "_____");
+
+        for (i = 1; scanf("%lf", &x) == 1; ++i)
+        {
+            avg += (x - avg) / i; // Better average
+            sum += x;             // Naive sum
+            navg = sum / i;       // Naive average
+
+            printf("%5d%17e%17e%17e\n", i, x, avg, navg);
+
+            // Use a tolerance to compare the averages
+            if (fabs(avg - navg) > 1e-9) // Adjust tolerance as needed
+            {
+                printf("Averages are no longer identical at iteration %d\n", i);
+                break;
+            }
+        }
+
+    return 0;
+    }
+
+
+
+SUMMARY_compute_average_advanced.c
+
+    #include <stdio.h>
+
+    int main(void)
+    {
+        double value = 1.0; // Starting value
+
+        // Infinite loop to generate values
+        while (1)
+        {
+            if (printf("%e\n", value) < 0) // Handle SIGPIPE or EOF
+            {
+                break; // Exit if the pipe is closed
+            }
+            value *= 1.000001; // Slightly increase the value
+        }
+
+        return 0;
+    }
+
+
+generate_numbers (SUMMARY_compute_average_advanced.c):
+
+    continuously generates exponentially increasing numbers.
+    Stops when the pipe to the main program is closed.
+
+
+compute_average (SUMMARY_compute_average.c):
+
+    Reads numbers from the pipe and calculates both averages.
+    Stops when the difference between avg and navg exceeds a small tolerance (1e-9).
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+When running the two programs:  output is infinite (had to press Ctrl + C for it to stop at around 15 million iterations, after it reached an average of 2,00....)
+
+1. Adjust the Tolerance Condition  
+    If the divergence is too subtle for 1e-9, adjust the tolerance based on the magnitude of the averages.
+
+        Use a relative tolerance instead of an absolute one:
+
+            if (fabs(avg - navg) / fabs(navg) > 1e-6) //relative difference
+        
+
+2. Enfore a maximum iteration limited 
+    Set an upper bount on the number of iterations to ensure the loop will terminate:
+
+        Add max_iterations in the loop condition: 
+
+            int max_iterations = 1000000; // Maximum number of iterations
+            for (i = 1; i <= max_iterations && scanf("%lf", &x) == 1; ++i)
+
+        This ensures the loop will stop after a certain number of iterations, regardless of whether the averages differ.
+
+3. Monitor exponantia growth
+    If the input numbers are growing too quickly (value *= 1.000001 in generate_numbers), the averages might diverge slower.
+
+        Increase the rate of growth: 
+            value *= 1.01;
+
+
+Other Option (didnt look much into it):  Add debugging output 
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Chose to change the exponential growth to 2.0:
+
+    #include <stdio.h>
+
+    int main(void)
+    {
+        double value = 1.0; // Starting value
+
+        // Infinite loop to generate values
+        while (1)
+        {
+            if (printf("%e\n", value) < 0) // Handle SIGPIPE or EOF
+            {
+                break; // Exit if the pipe is closed
+            }
+            value *= 2.0; // Increase the value by a 2 instead of 1.000001
+        }
+
+        return 0;
+    }
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Output: 
+
+    Count              Item                Average             Naive avg
+
+   ______             ______             _________           ___________
+       1        1.000000e+00          1.000000e+00          1.000000e+00
+       2        2.000000e+00          1.500000e+00          1.500000e+00 
+       3        4.000000e+00          2.333333e+00          2.333333e+00 
+       4        8.000000e+00          3.750000e+00          3.750000e+00
+       ...
+       ...
+       ...
+      26        3.366553e+07          2.581110e+06          2.581110e+06
+      27        6.710886e+07          4.971027e+06          4.971027e+06
+      28        1.342177e+08          9.586979e+06          9.586979e+06
+    Averages are no longer identical at iteration 28
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Problem / Assumption: no longer identical due to floating-point overflow in the naive average (navg) rather than genuine divergence caused by floating-point precision errors.
+
+Idea: change the exponential increase with 1.5  &  switch from double to long double & add max iteration count
+
+
+
+generate_numbers
+
+    #include <stdio.h>
+
+    int main(void)
+    {
+        long double value = 1.0; // Use long double for higher precision
+
+        // Infinite loop to generate values
+        while (1)
+        {
+            if (printf("%Le\n", value) < 0) // Use %Le for long double
+            {
+                break; // Exit if the pipe is closed
+            }
+            value *= 1.5; // Slower growth rate
+        }
+
+        return 0;
+    }
+
+
+compute_average_main.c
+
+    #include <stdio.h>
+    #include <math.h> // For fabs() and isinf()
+
+    int main(void)
+    {
+        int i;
+        int max_iterations = 1000000; // Set a maximum number of iterations
+        long double x;
+        long double avg = 0.0; // A better average
+        long double navg;      // A naive average
+        long double sum = 0.0;
+
+        printf("%5s%25s%25s%25s\n%5s%25s%25s%25s\n", 
+               "Count", "Item", "Average", "Naive avg", 
+               "_____", "_____", "_____", "_____");
+
+        for (i = 1; i <= max_iterations && scanf("%Lf", &x) == 1; ++i) // Use %Lf for long double
+        {
+            avg += (x - avg) / i; // Better average
+            sum += x;             // Naive sum
+            navg = sum / i;       // Naive average
+
+            // Check for overflow
+            if (isinf(navg) || isinf(avg))
+            {
+                printf("Overflow detected at iteration %d\n", i);
+                break;
+            }
+
+            printf("%5d%25Le%25Le%25Le\n", i, x, avg, navg); // Use %Le for long double
+
+            // Use relative tolerance to compare the averages
+            if (!divergence_detected && fabsl(avg - navg) > 1e-9)
+            {
+                printf("Averages are no longer identical at iteration %d\n", i);
+                break;
+            }
+        }
+
+        if (i > max_iterations)
+        {
+            printf("Reached maximum iterations (%d). Terminating.\n", max_iterations);
+        }
+
+        return 0;
+    }
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Output using 1.5:
+
+    Count              Item                Average             Naive avg
+
+   ______             ______             _________           ___________
+       1        1.000000e+00          1.000000e+00          1.000000e+00
+       2        2.000000e+00          1.250000e+00          1.250000e+00 
+       3        2.250000e+00          1.583333e+00          1.583333e+00 
+       4        3.375000e+00          2.031250e+00          2.031250e+00 
+       ...
+       ...
+       ...
+       ...
+       ...
+       ...
+      65        1.865404e+11          8.593696e+09          8.593696e+09
+      66        6.710886e+07          1.284139e+10          1.284139e+10
+      67        1.342177e+08          1.875295e+10          1.875295e+10
+    Averages are no longer identical at iteration 67
+
+
+
+Output using 2:
+
+    Count              Item                Average             Naive avg
+
+   ______             ______             _________           ___________
+       1        1.000000e+00          1.000000e+00          1.000000e+00
+       2        2.000000e+00          1.500000e+00          1.500000e+00 
+       3        4.000000e+00          2.333333e+00          2.333333e+00
+       4        8.000000e+00          3.750000e+00          3.750000e+00 
+       ...
+       ...
+       ...
+       ...
+       ...
+       ...
+      47        7.036874e+11          2.994415e+12          2.994415e+12
+      48        6.710886e+07          5.864062e+12          5.864062e+12
+      49        1.342177e+08          1.148878e+13          1.148878e+13
+    Averages are no longer identical at iteration 49
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+what happens if i left the line like this? 
+    if (!divergence_detected && fabsl(avg - navg) > 1e-9) // Adjust tolerance as needed
+
+
+What Changes?
+
+Absolute Tolerance Instead of Relative Tolerance: 
+
+    The condition fabsl(avg - navg) > 1e-9 compares the absolute difference between avg and navg.
+    
+    This means the divergence will be detected when the absolute difference exceeds 1e-9, regardless of how large avg or navg themselves are.
+
+In contrast, the previous relative tolerance (fabsl(avg - navg) / fabsl(navg) > 1e-6) took into account the magnitude of the numbers.
+
+
+Behavior of Divergence Detection:
+
+    Using an absolute threshold (1e-9) can cause the program to detect divergence sooner if the values are small, or later if the values are large but the difference remains below the threshold.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Example 
+
+Using Absolute Tolerance:
+    If avg = 1.0000000001 and navg = 1.0, the difference is:
+
+        fabsl(avg - navg) = 0.0000000001
+    
+    This won't trigger the condition if the tolerance is 1e-9.
+
+    However, if avg = 1e10 and navg = 1e10 +1, the diffence is:
+
+        fabs(avg - navg) = 1
+    
+    This will trigger divergence even though the relative difference is very small (1 / 1e10 = 1e-10)
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Which Tolerance to Use?
+
+Absolute Tolerance (fabsl(avg - navg) > 1e-9):
+    Simple and works for small, bounded numbers.
+    Risky when numbers grow large, as it may fail to capture significant relative differences.
+
+Relative Tolerance (fabsl(avg - navg) / fabsl(navg) > 1e-6):
+    Better for numbers that grow exponentially, as it scales with the magnitude of the values.
+
+
+For this case: switch to relative tolerance for more accurate divergence detection
+
+------------------------------------------------------------------------------------------------------------------------
+
+First: 
+Make the programm print the following 10 iterations after the line "Averages are no longer identical at iteration" to see what happens.
+
+
+    #include <stdio.h>
+    #include <math.h> // For fabs() and isinf()
+
+    int main(void)
+    {
+        int i;
+        int max_iterations = 1000000; // Set a maximum number of iterations
+        int print_extra_iterations = 10; // Number of extra iterations to print
+        int extra_iterations = 0;        // Counter for extra iterations
+        int divergence_detected = 0;     // Flag to track divergence detection
+        long double x;
+        long double avg = 0.0; // A better average
+        long double navg;      // A naive average
+        long double sum = 0.0;
+
+        printf("%5s%25s%25s%25s\n%5s%25s%25s%25s\n", 
+               "Count", "Item", "Average", "Naive avg", 
+               "_____", "_____", "_____", "_____");
+
+        for (i = 1; i <= max_iterations && scanf("%Lf", &x) == 1; ++i)
+        {
+            avg += (x - avg) / i; // Better average
+            sum += x;             // Naive sum
+            navg = sum / i;       // Naive average
+
+            printf("%5d%25Le%25Le%25Le\n", i, x, avg, navg);
+
+            // Use relative tolerance to compare the averages
+            if (!divergence_detected && fabsl(avg - navg) / fabsl(navg) > 1e-6) // Relative difference
+            {
+                printf("Averages are no longer identical at iteration %d\n", i);
+                divergence_detected = 1; // Mark that divergence is detected
+            }
+
+            // Print extra iterations after divergence
+            if (divergence_detected)
+            {
+                extra_iterations++;
+                if (extra_iterations > print_extra_iterations) 
+                {
+                    break; // Exit after printing 10 extra iterations
+                }
+            }
+        }
+
+        if (i > max_iterations)
+        {
+            printf("Reached maximum iterations (%d). Terminating.\n", max_iterations);
+        }
+
+        return 0;
+    }
+
+Key Changes
+
+Extra Iterations Counter:
+    print_extra_iterations = 10; ensures that 10 additional iterations are printed after the divergence is detected.
+
+Divergence Detection:
+    A flag (divergence_detected) tracks when the divergence condition (fabsl(avg - navg) / fabsl(navg) > 1e-6) is met.
+
+Exit After Extra Iterations:
+    The program continues for 10 more iterations after detecting divergence and then exits.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Output:
+
+    Count              Item                Average             Naive avg
+
+   ______             ______             _________           ___________
+     ...
+     ...
+     ...
+     ...
+     ...
+     ...
+      47        7.036874e+11          2.994415e+12          2.994415e+12
+      48        6.710886e+07          5.864062e+12          5.864062e+12
+      49        1.342177e+08          1.148878e+13          1.148878e+13
+    Averages are no longer identical at iteration 49
+      50        5.629600e+14          2.251800e+13          2.251800e+13
+      51        1.125900e+15          4.415294e+13          4.415294e+13
+      52        2.251700e+15          8.660769e+13          8.660769e+13
+      53        4.503600e+15          1.699472e+14          1.699472e+14
+      54        9.007199e+15          3.336000e+14          3.336000e+14
+      55        1.801440e+16          6.550691e+14          6.550691e+14
+      56        3.602880e+16          1.286743e+15          1.286743e+15
+      57        7.206759e+16          2.527337e+15          2.527337e+15
+      58        1.441152e+17          4.969489e+15          4.969489e+15
+      59        2.882304e+17          9.770522e+15          9.770522e+15
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+After changing the extra printed iterations range to 50 & changing the code to use the relative tolerance:
+
+Output:  infinite "inf" output for item and naive average and for average -nan (after reaching the limit - couldn't even see it because of how fast the iterations were printed) 
+
+Program Continuation: Even after reaching inf and nan, the program continued because there was no condition to terminate when these values were encountered.
+
+
+How to handle this:
+
+1. Detect and Stop on Overflow
+
+    Add a check to stop the program as soon as either avg or navg becomes inf or nan.
+    Use the isinf() and isnan() function from <math.h>
+
+        #include <stdio.h>
+        #include <math.h> // For fabsl(), isinf(), and isnan()
+
+        int main(void)
+        {
+            int i;
+            int max_iterations = 1000000; // Set a maximum number of iterations
+            int print_extra_iterations = 50; // Number of extra iterations to print
+            int extra_iterations = 0;        // Counter for extra iterations
+            int divergence_detected = 0;     // Flag to track divergence detection
+            long double x;
+            long double avg = 0.0; // A better average
+            long double navg;      // A naive average
+            long double sum = 0.0;
+
+            printf("%5s%25s%25s%25s\n%5s%25s%25s%25s\n", 
+                   "Count", "Item", "Average", "Naive avg", 
+                   "_____", "_____", "_____", "_____");
+
+            for (i = 1; i <= max_iterations && scanf("%Lf", &x) == 1; ++i)
+            {
+                avg += (x - avg) / i; // Better average
+                sum += x;             // Naive sum
+                navg = sum / i;       // Naive average
+
+                // Check for inf or nan and stop the program
+                if (isinf(avg) || isinf(navg) || isnan(avg) || isnan(navg))
+                {
+                    printf("Overflow or invalid value detected at iteration %d\n", i);
+                    break;
+                }
+
+                printf("%5d%25Le%25Le%25Le\n", i, x, avg, navg);
+
+                // Use relative tolerance to compare the averages
+                if (!divergence_detected && fabsl(avg - navg) / fabsl(navg) > 1e-6) // Relative difference
+                {
+                    printf("Averages are no longer identical at iteration %d\n", i);
+                    divergence_detected = 1; // Mark that divergence is detected
+                }
+
+                // Print extra iterations after divergence
+                if (divergence_detected)
+                {
+                    extra_iterations++;
+                    if (extra_iterations > print_extra_iterations) 
+                    {
+                        break; // Exit after printing 50 extra iterations
+                    }
+                }
+            }
+
+            if (i > max_iterations)
+            {
+                printf("Reached maximum iterations (%d). Terminating.\n", max_iterations);
+            }
+
+            return 0;
+        }
+
+----------------------------------------------------------------------------------------------------------------------------
+
+Output:
+
+    Count              Item                Average             Naive avg
+
+   ______             ______             _________           ___________
+     ...
+     ...
+     ...
+     ...
+     ...
+     ...
+     ...
+     ...
+   16381        7.545822e+4930          9.078593e+4926        9.078593e+4926
+   16382        1.487164e+4931          1.815698e+4927        1.815698e+4927
+   16383        2.974329e+4931          3.630994e+4927        3.630994e+4927
+   16384        5.947657e+4931          7.261544e+4927        7.261544e+4927
+   Overflow or invalid value detected at iteration 16385
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if the averages arent identical, the following 50 iterations should be printed - this message didn't appear before for this output
+
+Naive vs Better Average:
+    While the better average is numerically stable for practical values, at extreme magnitudes, both approaches behave similarly because the numerical representation itself becomes unreliable.
+
+
+Overflow Detected at Iteration 16,385:
+    The program identified inf or nan at this iteration, and the averages were still identical up to this point.
+    The values were very close to the maximum limit of long double (approximately 1.18973e+4932).
+
+Does this mean they will always be identical?
+    No, they will not remain identical infefinitely, even with a variable type that could exceed current limits.
+
+    1. Why are they currently identical?
+        At smaller scales, the errors in the naive average are negligible compared to the actual numbers.
+        The exponential growth overwhelms the differences introduced by floating-point inaccuracies.
+    
+    2. If a larger variable were used:
+        Once the numbers grow beyond the overflow limit of long double, and if a higher-precision variable were used (like quadmath for extended precision), the differences would eventually emerge.
+        The better average (avg) would continue to compute a stable value, while the naive average (navg) would start diverging due to the accumulated errors in the sum term.
+
+    3. What happens beyond long double limits:
+        In the Early Stages:
+        The averages (avg and navg) would appear identical because rounding errors are minimal relative to the magnitude of the numbers.
+
+        In the Long Run:
+        As the number of iterations increases: The divergence would eventually become noticeable.
+        The better average (avg) would continue to accurately track the true average of the numbers.
+        The naive average (navg) would start to diverge due to accumulated errors in the sum term.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
